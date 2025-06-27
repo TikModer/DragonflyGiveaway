@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Get Robux Offers</title>
+<style>
+  body {
+    background-color: #e6e6e6; /* Tailwind gray-200 */
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 16px;
+    gap: 20px;
+  }
+ header {
+  font-family: Impact, Haettenschweiler, 'Arial Black', sans-serif;
+  font-size: 3.5rem;
+  color: #16a34a;
+  text-align: center;
+  padding: 32px 0;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  text-transform: uppercase;
+}
+ header span {
+  font-family: Arial, sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1e293b;
+  display: block;
+  margin-top: 12px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
+}
+ .grid {
+    display: grid;
+    max-width: 960px;
+    width: 100%;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .card {
+    background: white;
+    border: 1px solid #d1d5db; /* gray-300 */
+    border-radius: 0.5rem;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  }
+  .card img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+  }
+  .card h3 {
+    margin-top: 12px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .card p {
+    color: #4b5563; /* gray-600 */
+    margin-top: 4px;
+    text-align: center;
+  }
+  .btn-get-robux {
+    margin-top: 16px;
+    width: 100%;
+    padding: 10px 0;
+    border-radius: 9999px;
+    border: 4px solid white;
+    background-color: #22c55e; /* green-500 */
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .btn-get-robux:hover {
+    background-color: #16a34a; /* green-600 */
+  }
+  .btn-load {
+    padding: 8px 16px;
+    border-radius: 0.375rem;
+    border: 2px solid black;
+    background-color: #22d3ee; /* cyan-400 */
+    color: black;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 12px;
+  }
+  .btn-load:hover {
+    background-color: #0ea5e9; /* cyan-500 */
+  }
+  .buttons-container {
+    margin-top: 32px;
+    display: flex;
+    gap: 16px;
+  }
+  .loading {
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  Complete to join Giveaway
+  <span>Complete one of the steps to Win Dragonfly</span>
+</header>
+
+<div id="loading" class="loading">Loading offers...</div>
+
+<div class="grid" id="offersGrid"></div>
+
+<div class="buttons-container" id="buttonsContainer" style="display:none;">
+  <button class="btn-load" id="loadMoreBtn">More offers</button>
+  <button class="btn-load" id="showLessBtn" style="display:none;">Less offers</button>
+</div>
+
+<script>
+  const offersGrid = document.getElementById('offersGrid');
+  const loadingEl = document.getElementById('loading');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  const showLessBtn = document.getElementById('showLessBtn');
+  const buttonsContainer = document.getElementById('buttonsContainer');
+
+  let adsData = [];
+  let displayCount = 8;
+
+  function renderOffers() {
+    offersGrid.innerHTML = '';
+    adsData.slice(0, displayCount).forEach(ad => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const img = document.createElement('img');
+      img.src = ad.network_icon;
+      img.alt = ad.name;
+      card.appendChild(img);
+
+      const title = document.createElement('h3');
+      title.textContent = ad.name;
+      card.appendChild(title);
+
+      const conversion = document.createElement('p');
+      conversion.textContent = ad.conversion;
+      card.appendChild(conversion);
+
+      const button = document.createElement('button');
+      button.className = 'btn-get-robux';
+      button.textContent = 'Get Robux';
+      button.onclick = () => window.open(ad.url, '_blank');
+      card.appendChild(button);
+
+      offersGrid.appendChild(card);
+    });
+
+    // Show/hide buttons
+    if (displayCount < adsData.length) {
+      loadMoreBtn.style.display = 'inline-block';
+    } else {
+      loadMoreBtn.style.display = 'none';
+    }
+
+    if (displayCount > 8) {
+      showLessBtn.style.display = 'inline-block';
+    } else {
+      showLessBtn.style.display = 'none';
+    }
+  }
+
+  function loadMore() {
+    displayCount += 5;
+    renderOffers();
+  }
+
+  function showLess() {
+    displayCount = 8;
+    renderOffers();
+  }
+
+  loadMoreBtn.addEventListener('click', loadMore);
+  showLessBtn.addEventListener('click', showLess);
+
+  async function fetchAds() {
+    try {
+      const res = await fetch("https://d3ept9mddcbuhi.cloudfront.net/public/offers/feed.php?user_id=623910&api_key=525aedb31fa76c26997f25d2b15e501f&s1=&s2=");
+      adsData = await res.json();
+
+      loadingEl.style.display = 'none';
+      buttonsContainer.style.display = 'flex';
+
+      renderOffers();
+    } catch (error) {
+      loadingEl.textContent = 'Failed to load offers.';
+      console.error('Error fetching ads:', error);
+    }
+  }
+
+  fetchAds();
+
+</script>
+<style>
+  body {
+    position: relative; /* so absolute children work relative to body */
+    overflow-x: hidden;
+  }
+  .falling-dragonfly {
+    position: fixed;
+    top: -50px;
+    pointer-events: none;
+    user-select: none;
+    opacity: 1;
+    z-index: -1; /* behind everything */
+    will-change: transform;
+  }
+</style>
+
+<script>
+  const dragonflyURL = "https://static.wikia.nocookie.net/growagarden/images/c/c9/DragonflyIcon.png/revision/latest/smart/width/400/height/225?cb=20250603072107";
+
+  const numberOfDragonflies = 20;
+  const dragonflies = [];
+
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+ function createDragonfly() {
+  const img = document.createElement('img');
+  img.src = dragonflyURL;
+  img.className = 'falling-dragonfly';
+  img.style.left = `${random(0, window.innerWidth)}px`;
+  img.style.top = `-${random(20, 500)}px`;
+  const size = random(60, 250);  // <-- bigger sizes now here
+  img.style.width = `${size}px`;
+  img.style.height = 'auto';
+  img.style.opacity = random(0.8, 1);
+  img.speed = random(0.3, 1);
+  img.drift = random(-0.3, 0.3);
+  img.angle = random(0, 360);
+  img.angleSpeed = random(0.1, 0.5);
+  document.body.appendChild(img);
+  dragonflies.push(img);
+}
+
+
+  for (let i = 0; i < numberOfDragonflies; i++) {
+    createDragonfly();
+  }
+
+  function animateDragonflies() {
+    dragonflies.forEach(dragonfly => {
+      let top = parseFloat(dragonfly.style.top);
+      let left = parseFloat(dragonfly.style.left);
+
+      top += dragonfly.speed;
+      dragonfly.angle += dragonfly.angleSpeed;
+      left += dragonfly.drift;
+
+      // Wrap around horizontally
+      if (left > window.innerWidth) left = 0;
+      if (left < 0) left = window.innerWidth;
+
+      if (top > window.innerHeight) {
+        top = -50; // reset to top
+        left = random(0, window.innerWidth);
+        // randomize size and speed again
+        const size = random(60, 250);
+        dragonfly.style.width = `${size}px`;
+        dragonfly.style.opacity = random(0.4, 1);
+        dragonfly.speed = random(0.3, 1);
+        dragonfly.drift = random(-0.3, 0.3);
+      }
+
+      dragonfly.style.top = `${top}px`;
+      dragonfly.style.left = `${left}px`;
+      dragonfly.style.transform = `rotate(${dragonfly.angle}deg)`;
+    });
+
+    requestAnimationFrame(animateDragonflies);
+  }
+
+  animateDragonflies();
+</script>
+
+</body>
+</html>
